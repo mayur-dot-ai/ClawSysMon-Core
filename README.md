@@ -346,6 +346,9 @@ npm start
 - [ ] One-click rollback
 - [ ] Schema documentation inline
 
+### v2.0 - Security & Enterprise
+- [ ] Full E2EE database encryption (SQLite with SQLCipher)
+
 ---
 
 ## Pro Version
