@@ -182,7 +182,9 @@ chmod +x install.sh
 **The installer will ask:**
 - Where to install? (default: `~/.clawsysmon/`)
 - Which features to enable? (process monitor, file watcher, etc.)
-- Which port to use? (default: 3000)
+- **Standalone port or reverse proxy?**
+  - Standalone: Pick a port (default: 3000)
+  - Reverse proxy: Configure Caddy/Nginx to route `/` → Dashboard, `/api/openclaw` → OpenClaw
 - Path to your OpenClaw config? (auto-detected or manual)
 
 Everything is configurable. No surprises.
