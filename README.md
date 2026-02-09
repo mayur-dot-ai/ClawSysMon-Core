@@ -162,6 +162,27 @@ Since the Model Testing Lab needs API keys that shouldn't touch the main OpenCla
 | Database | SQLite (local file) |
 | Process Mgmt | pm2-interface or child_process |
 
+### How Socket.io Works Here
+
+Socket.io is the **communication pipe**, not the brain. The Node.js backend is the brain that runs continuously.
+
+**Flow:**
+```
+File changes on disk
+    ↓
+Chokidar (Node.js) detects it
+    ↓
+Write to SQLite (history)
+    ↓
+Socket.io broadcasts: "File changed!"
+    ↓
+Browser updates UI (if someone's looking)
+```
+
+If nobody's connected? **Everything still works.** Events get logged to SQLite. Next time someone opens the dashboard, they see the full history.
+
+Socket.io is just for the "live" feeling when someone's actually using it. The real work (file monitoring, config validation, process management) happens in Node.js 24/7 regardless.
+
 ### Installation
 
 **Interactive Setup** (Recommended)
@@ -184,7 +205,7 @@ chmod +x install.sh
 - Which features to enable? (process monitor, file watcher, etc.)
 - **Standalone port or reverse proxy?**
   - Standalone: Pick a port (default: 3000)
-  - Reverse proxy: Configure Caddy/Nginx to route `/` → Dashboard, `/api/openclaw` → OpenClaw
+  - Reverse proxy: Configure Caddy/Nginx to route `/clawsysmon` → ClawSysMon, `/` → OpenClaw
 - Path to your OpenClaw config? (auto-detected or manual)
 
 Everything is configurable. No surprises.
@@ -195,24 +216,62 @@ Everything is configurable. No surprises.
 - Runs on separate port (`:3000` by default)
 - User-configurable
 
-**Option 2: Reverse Proxy** (For tunnel users)
-- Caddy/Nginx routes `/` → Dashboard, `/api/openclaw` → OpenClaw
-- Single exposed port serves both
+**Option 2: Reverse Proxy — Sub-Path Routing** (Recommended for single-port access)
+
+Caddy example:
+```caddy
+:18789 {
+    # OpenClaw Gateway at root
+    reverse_proxy localhost:18788
+    
+    # ClawSysMon at /clawsysmon (case insensitive)
+    reverse_proxy /clawsysmon* localhost:3000 {
+        uri strip_prefix /clawsysmon
+    }
+}
+```
+
+Access:
+- `localhost:18789/` → OpenClaw dashboard
+- `localhost:18789/clawsysmon` → ClawSysMon
 
 ### Data Persistence
 
+**Everything in SQLite** — minimal files on disk.
+
+**Database naming:** Randomized for security (e.g., `clawsysmon_a7x9k2p9.db`). The actual filename is stored in `.env` which the app reads at startup.
+
+**On disk:**
 ```
-~/.clawsysmon/
-├── data/
-│   ├── clawsysmon.db          # Main SQLite database
-│   ├── clawsysmon.db.backup   # Auto-backup
-│   └── event-stream.log       # Raw event log (JSONL)
-├── config/
-│   ├── auth.json              # Local auth
-│   └── dashboard.json         # UI preferences
-└── logs/
-    └── dashboard.log
+~/.clawsysmon_x7k2p9/           # Randomized install directory
+├── .env                        # DB filename, port, feature flags
+├── clawsysmon_a7x9k2p9.db      # Everything lives here (SQLite)
+├── index.html                  # SPA entry
+├── assets/                     # Built JS/CSS
+└── logs/                       # Optional file logging
 ```
+
+**In the database:**
+- `settings` — User preferences, dashboard config
+- `events` — Event stream history
+- `projects` — Project definitions
+- `tasks` — Kanban tasks with column/status
+- `agents` — Custom agent definitions (Pro)
+
+**Benefits:**
+- Single-file backup (just `.db`)
+- Zero-config (no MySQL to manage)
+- Portable (copy DB, move to new server)
+- Atomic transactions (no config corruption)
+
+### Multi-Instance Support
+
+You can run multiple ClawSysMon instances if needed:
+- Different install directories (`~/.clawsysmon-work/`, `~/.clawsysmon-personal/`)
+- Different ports (3000, 3001, etc.)
+- Different SQLite databases
+
+**Important:** Each instance should target a **specific OpenClaw instance** (by config path or PID) to avoid watcher conflicts. The installer prompts for this during setup.
 
 ---
 
@@ -239,7 +298,7 @@ If user edits while agent writes:
 - Merge strategy for non-conflicting changes
 
 ### Data Recovery
-- Database stored in `~/.clawsysmon/` (outside install folder)
+- Database stored outside install folder
 - Auto-backup before schema migrations
 - Daily backups to `~/.clawsysmon/backups/`
 
@@ -299,6 +358,7 @@ The Pro version adds GTD-based project management:
 - **Natural language** task commands
 - **Full skill CRUD** with templates
 - **Full agent CRUD** with persona templates
+- **Multi-agent workflows** — chain agents together for complex tasks
 
 Contact: [pro@clawsysmon.com](mailto:pro@clawsysmon.com)
 
