@@ -18,10 +18,10 @@ Real-time monitoring, configuration management, and safe experimentation tools f
 | **Event Stream** | Live log of file changes, agent actions, config updates |
 | **File Watcher** | inotify-based monitoring of `/memory`, `/workspace`, configs |
 | **Config Editor** | Edit `config.json`, `soul.md`, agent memory files with validation |
-| **Model Testing Lab** | Test providers/models in isolation before applying to OpenClaw |
 | **Dual Search** | Vector search + native file search across all workspace files |
 | **Skill Browser** | Read-only view of installed skills with documentation |
 | **Agent Browser** | Read-only view of configured OpenClaw agents and their settings |
+| **Model Testing Lab** | Test providers/models in isolation before applying to OpenClaw (v1.0 later) |
 
 ### Pro (Commercial)
 
@@ -105,12 +105,33 @@ Read-only view of configured OpenClaw agents:
 
 Perfect for understanding your OpenClaw setup without risking accidental changes.
 
-### Model Testing Lab
-- ChatGPT-style interface isolated from main OpenClaw config
+### Model Testing Lab (v1.0 Later)
+ChatGPT-style interface isolated from main OpenClaw config for testing providers/models before applying them.
+
+**Key Capabilities:**
 - Test any provider/model (OpenAI, Anthropic, Ollama, etc.)
-- Temporary API keys (not persisted to main config)
+- Tool calling verification — ensure models support function calling
+- Temperature/top-p tuning with immediate feedback
 - Generates proper `/command` for user to submit to OpenClaw
 - Handles provider failures gracefully
+
+**API Key Storage — E2EE Approach:**
+Since the Model Testing Lab needs API keys that shouldn't touch the main OpenClaw config, we use browser-side encryption:
+
+- **Encryption:** API keys encrypted via Web Crypto API (AES-GCM) in the browser
+- **Storage:** Ciphertext stored in IndexedDB (not localStorage — better for binary data)
+- **Password:** User provides an encryption password that is **never stored anywhere**
+- **Session-only:** Decrypted keys live only in memory; user must re-enter password after refresh
+- **Paranoid mode:** Optional "don't store anything" — paste key each time (most secure)
+
+**Security Properties:**
+- ✅ Keys never leave browser unencrypted
+- ✅ Server (ClawSysMon backend) never sees keys
+- ✅ XSS attacker gets only ciphertext without the password
+- ✅ User controls the encryption secret
+- ✅ `non-extractable` CryptoKey objects for extra hardening
+
+*Tradeoff:* User must remember their encryption password. If forgotten, keys are lost (a feature, not a bug).
 
 ### Search & Discovery
 
@@ -232,15 +253,15 @@ npm start
 
 ## Roadmap
 
-### v1.0 - Core Release
-- [ ] Process monitor with restart capability
-- [ ] Real-time event stream
-- [ ] File watcher with attribution
-- [ ] Config editor with JSON validation
-- [ ] Model testing lab
-- [ ] Dual-layer search
-- [ ] Skill browser (read-only)
-- [ ] Agent browser (read-only)
+### v1.0 - Core Release (Priority Order)
+1. [ ] Process monitor with restart capability
+2. [ ] Real-time event stream
+3. [ ] File watcher with attribution
+4. [ ] Config editor with JSON validation
+5. [ ] Dual-layer search
+6. [ ] Skill browser (read-only)
+7. [ ] Agent browser (read-only)
+8. [ ] Model testing lab (E2EE API key storage)
 
 ### v1.1 - Enhanced Monitoring
 - [ ] Event stream filters and search
