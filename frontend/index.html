@@ -15,7 +15,10 @@
       align-items: center;
       justify-content: center;
     }
-    .container { text-align: center; padding: 40px; }
+    .container {
+      text-align: center;
+      padding: 40px;
+    }
     h1 {
       font-size: 2.5rem;
       margin-bottom: 10px;
@@ -40,9 +43,22 @@
     }
     .online { background: #00ff88; box-shadow: 0 0 20px #00ff88; }
     .offline { background: #ff4444; box-shadow: 0 0 20px #ff4444; animation: none; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-    .status-text { font-size: 1.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
-    .pid { color: #888; margin-top: 10px; font-size: 0.9rem; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .status-text {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pid {
+      color: #888;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
     .revive-btn {
       background: linear-gradient(90deg, #7b2cbf, #00d4ff);
       border: none;
@@ -55,10 +71,24 @@
       transition: transform 0.2s, box-shadow 0.2s;
       margin-top: 20px;
     }
-    .revive-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(123, 44, 191, 0.4); }
-    .revive-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .last-check { color: #666; font-size: 0.85rem; margin-top: 30px; }
-    .error { color: #ff4444; margin-top: 10px; }
+    .revive-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(123, 44, 191, 0.4);
+    }
+    .revive-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .last-check {
+      color: #666;
+      font-size: 0.85rem;
+      margin-top: 30px;
+    }
+    .error {
+      color: #ff4444;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
